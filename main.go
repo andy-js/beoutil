@@ -30,6 +30,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -619,20 +620,21 @@ func doListTracks(c *cli.Context) error {
 	return nil
 }
 
-func getArtistImages(a *deezerModels.Artist) []models.Image {
+func getTrackImages(md5Image string) []models.Image {
+	baseURL := "https://e-cdns-images.dzcdn.net/images/cover/" + md5Image
 	return []models.Image{
 		{
-			URL:       a.PictureBig,
+			URL:       path.Join(baseURL, "500x500-000000-80-0-0.jpg"),
 			Size:      models.Large,
 			MediaType: "image/jpg",
 		},
 		{
-			URL:       a.PictureMedium,
+			URL:       path.Join(baseURL, "250x250-000000-80-0-0.jpg"),
 			Size:      models.Medium,
 			MediaType: "image/jpg",
 		},
 		{
-			URL:       a.PictureSmall,
+			URL:       path.Join(baseURL, "56x56-000000-80-0-0.jpg"),
 			Size:      models.Small,
 			MediaType: "image/jpg",
 		},
@@ -656,7 +658,7 @@ func toQueueItem(t deezerModels.Track) models.PlayQueueItem {
 			},
 			Name:   t.Title,
 			Artist: []models.Artist{a},
-			Image:  getArtistImages(t.Artist),
+			Image:  getTrackImages(t.MD5Image),
 			Id:     strconv.Itoa(t.ID),
 		},
 		Behaviour: models.Planned,
