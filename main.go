@@ -499,7 +499,7 @@ func doSetActiveSource(c *cli.Context) error {
 	return br.BeoZone.PlaySource(c.Context, models.SourceID(args.Get(1)))
 }
 
-func doGetActiveSources(c *cli.Context) error {
+func doGetActiveSource(c *cli.Context) error {
 	args := c.Args()
 	if args.Len() != 1 {
 		cli.ShowSubcommandHelpAndExit(c, 1)
@@ -525,6 +525,15 @@ func doGetActiveSources(c *cli.Context) error {
 		fmt.Printf("\t\tSource ID:\t%s\n", as.ActiveSources.Primary)
 	}
 	return nil
+}
+
+func doClearActiveSource(c *cli.Context) error {
+	args := c.Args()
+	if args.Len() != 1 {
+		cli.ShowSubcommandHelpAndExit(c, 1)
+	}
+	br := beoremote.NewClient(args.First())
+	return br.BeoZone.EndExperience(c.Context)
 }
 
 func doAddListener(c *cli.Context) error {
@@ -1034,22 +1043,29 @@ func main() {
 		Name:      "get-sources",
 		Usage:     "Get sources available to product",
 		ArgsUsage: "<product IP>",
-		Category:  "Multiroom",
+		Category:  "Sources",
 		Action:    doGetSources,
 	})
 	app.Commands = append(app.Commands, &cli.Command{
 		Name:      "get-active",
-		Usage:     "Get active sources",
+		Usage:     "Get active source",
 		ArgsUsage: "<product IP>",
-		Category:  "Multiroom",
-		Action:    doGetActiveSources,
+		Category:  "Sources",
+		Action:    doGetActiveSource,
 	})
 	app.Commands = append(app.Commands, &cli.Command{
 		Name:      "set-active",
-		Usage:     "Get active source",
+		Usage:     "Set active source",
 		ArgsUsage: "<product IP> <source ID>",
-		Category:  "Multiroom",
+		Category:  "Sources",
 		Action:    doSetActiveSource,
+	})
+	app.Commands = append(app.Commands, &cli.Command{
+		Name:      "clear-active",
+		Usage:     "Clear active source",
+		ArgsUsage: "<product IP>",
+		Category:  "Sources",
+		Action:    doClearActiveSource,
 	})
 	app.Commands = append(app.Commands, &cli.Command{
 		Name:      "add-listener",
