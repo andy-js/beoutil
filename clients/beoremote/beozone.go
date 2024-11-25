@@ -292,5 +292,5 @@ func (z *beoZone) GetSystemProducts(ctx context.Context) ([]models.Product, erro
 }
 
 func (z *beoZone) OpenNotificationStream(ctx context.Context) (<-chan rest.Event, error) {
-	return z.client.OpenEventStream(ctx, z.baseURL+"/BeoNotify/Notifications")
+	return z.client.OpenEventStream(ctx, z.baseURL+"/BeoNotify/Notifications?timeout=86400")
 }
