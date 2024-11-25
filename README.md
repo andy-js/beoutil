@@ -44,9 +44,6 @@ beoutil [global options] command [command options]
 
 #### Multiroom Control
 
-- `get-sources`: Get sources available to a product.
-- `get-active`: Get the currently active sources for a product.
-- `set-active`: Set the active source on a product.
 - `add-listener`: Add a listener to the primary experience.
 - `remove-listener`: Remove a listener from the primary experience.
 
@@ -78,6 +75,13 @@ beoutil [global options] command [command options]
 - `play-qitem`: Play an item from the playback queue.
 - `set-repeat`: Set the queue to repeat mode.
 - `set-random`: Set the queue to random mode.
+
+#### Source Selection
+
+- `get-sources`: Get sources available to a product.
+- `get-active`: Get the currently active sources for a product.
+- `set-active`: Set the active source on a product.
+- `clear-active`: Clear active source.
 
 #### Speaker Control
 
