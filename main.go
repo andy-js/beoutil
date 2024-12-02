@@ -190,31 +190,12 @@ func doListProducts(c *cli.Context) error {
 }
 
 func doAllStandby(c *cli.Context) error {
-	if c.NArg() != 0 {
+	args := c.Args()
+	if args.Len() != 1 {
 		cli.ShowSubcommandHelpAndExit(c, 1)
 	}
-	products, err := getCachedProducts()
-	if err != nil {
-		return err
-	}
-	for _, p := range products {
-		for _, ip := range p.IPs {
-			br := beoremote.NewClient(ip.String())
-			var s models.PowerState
-			s, err = br.BeoDevice.GetState(c.Context)
-			if err != nil {
-				continue
-			}
-			if s != models.PowerStateOn {
-				break
-			}
-			err = br.BeoDevice.AllStandby(c.Context)
-			if err == nil {
-				break
-			}
-		}
-	}
-	return err
+	br := beoremote.NewClient(args.First())
+	return br.BeoDevice.AllStandby(c.Context)
 }
 
 func doStandby(c *cli.Context) error {
@@ -844,10 +825,11 @@ func main() {
 		Action: doListProducts,
 	})
 	app.Commands = append(app.Commands, &cli.Command{
-		Name:     "all-standby",
-		Usage:    "Put all products into standby",
-		Category: "Power Management",
-		Action:   doAllStandby,
+		Name:      "all-standby",
+		Usage:     "Put all products into standby",
+		ArgsUsage: "<product IP>",
+		Category:  "Power Management",
+		Action:    doAllStandby,
 	})
 	app.Commands = append(app.Commands, &cli.Command{
 		Name:      "standby",
