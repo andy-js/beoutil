@@ -774,29 +774,22 @@ func doWatchNotifications(c *cli.Context) error {
 		cli.ShowSubcommandHelpAndExit(c, 1)
 	}
 	br := beoremote.NewClient(args.First())
-retry:
-	events, err := br.BeoZone.OpenNotificationStream(c.Context)
+	resp, err := br.BeoZone.OpenNotifications(c.Context)
 	if err != nil {
 		return err
 	}
-	for event := range events {
-		// Handle the product closing the connection on us.
-		// It's not clear why they do this.
-		if errors.Is(event.Err, io.EOF) {
-			fmt.Printf("[Reconnecting...]\n\n")
-			goto retry
-		}
+	defer func() { _ = resp.Close }()
+	d := json.NewDecoder(resp.Body)
+	for {
 		var n models.NotificationWrapper
-		if event.Err != nil {
-			fmt.Printf("Error: %v\n\n", event.Err)
-		} else if err = json.Unmarshal(event.Value, &n); err != nil {
+		if err = d.Decode(&n); err != nil {
 			fmt.Printf("Error: %s\n\n", err)
-		} else {
-			fmt.Printf("Type: %s\n", n.Notification.Type)
-			fmt.Printf("Kind: %s\n", n.Notification.Kind)
-			fmt.Printf("Timestamp: %s\n", n.Notification.Timestamp)
-			fmt.Printf("Data: %s\n\n", string(n.Notification.Data))
+			break
 		}
+		fmt.Printf("Type: %s\n", n.Notification.Type)
+		fmt.Printf("Kind: %s\n", n.Notification.Kind)
+		fmt.Printf("Timestamp: %s\n", n.Notification.Timestamp)
+		fmt.Printf("Data: %s\n\n", string(n.Notification.Data))
 	}
 	return nil
 }

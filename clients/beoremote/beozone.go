@@ -23,6 +23,7 @@ package beoremote
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"net/url"
 
 	"beoutil/clients/beoremote/models"
@@ -63,7 +64,7 @@ type BeoZone interface {
 	RemoveListener(ctx context.Context, jid models.Jid) error
 	EndExperience(ctx context.Context) error
 	GetSystemProducts(ctx context.Context) ([]models.Product, error)
-	OpenNotificationStream(ctx context.Context) (<-chan rest.Event, error)
+	OpenNotifications(ctx context.Context) (*http.Response, error)
 }
 
 type beoZone struct {
@@ -291,6 +292,6 @@ func (z *beoZone) GetSystemProducts(ctx context.Context) ([]models.Product, erro
 	return r.Products, nil
 }
 
-func (z *beoZone) OpenNotificationStream(ctx context.Context) (<-chan rest.Event, error) {
-	return z.client.OpenEventStream(ctx, z.baseURL+"/BeoNotify/Notifications?timeout=86400")
+func (z *beoZone) OpenNotifications(ctx context.Context) (*http.Response, error) {
+	return z.client.OpenStream(ctx, z.baseURL+"/BeoNotify/Notifications?timeout=86400")
 }

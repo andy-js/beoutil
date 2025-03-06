@@ -24,7 +24,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -37,7 +36,7 @@ type Client interface {
 	DoPost(ctx context.Context, endPoint string, v interface{}) ([]byte, error)
 	DoPut(ctx context.Context, endPoint string, v interface{}) ([]byte, error)
 	DoDelete(ctx context.Context, endPoint string) ([]byte, error)
-	OpenEventStream(ctx context.Context, endPoint string) (<-chan Event, error)
+	OpenStream(ctx context.Context, endPoint string) (*http.Response, error)
 }
 
 type jsonClient struct {
@@ -146,34 +145,7 @@ func (c *jsonClient) DoDelete(ctx context.Context, endPoint string) ([]byte, err
 	return c.doRequest(req)
 }
 
-type Event struct {
-	Value json.RawMessage
-	Err   error
-}
-
-func isEOF(err error) bool {
-	return errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF)
-}
-
-func processEvents(ctx context.Context, rc io.ReadCloser, events chan<- Event) {
-	defer func() { _ = rc.Close() }()
-	defer close(events)
-	d := json.NewDecoder(rc)
-	for {
-		var m json.RawMessage
-		err := d.Decode(&m)
-		select {
-		case <-ctx.Done():
-			return
-		case events <- Event{Value: m, Err: err}:
-			if isEOF(err) {
-				return
-			}
-		}
-	}
-}
-
-func (c *jsonClient) OpenEventStream(ctx context.Context, endPoint string) (<-chan Event, error) {
+func (c *jsonClient) OpenStream(ctx context.Context, endPoint string) (*http.Response, error) {
 	var (
 		req  *http.Request
 		resp *http.Response
@@ -191,7 +163,5 @@ func (c *jsonClient) OpenEventStream(ctx context.Context, endPoint string) (<-ch
 		_ = resp.Body.Close()
 		return nil, newHTTPError(resp)
 	}
-	events := make(chan Event)
-	go processEvents(ctx, resp.Body, events)
-	return events, nil
+	return resp, nil
 }
